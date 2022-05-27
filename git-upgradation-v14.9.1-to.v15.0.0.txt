@@ -1,0 +1,51 @@
+Elasticsearch upgrade
+
+sudo yum install libicu-devel
+rpm --import https://artifacts.elastic.co/GPG-KEY-elasticsearch
+
+vim /etc/yum.repos.d/elasticsearch.repo
+
+[elasticsearch]
+name=Elasticsearch repository for 7.x packages
+baseurl=https://artifacts.elastic.co/packages/7.x/yum
+gpgcheck=1
+gpgkey=https://artifacts.elastic.co/GPG-KEY-elasticsearch
+enabled=0
+autorefresh=1
+type=rpm-md
+
+sudo yum install --enablerepo=elasticsearch elasticsearch
+
+sudo chown elasticsearch:elasticsearch -R /usr/share/elasticsearch
+sudo chown elasticsearch:elasticsearch -R /var/log/elasticsearch
+sudo chown elasticsearch:elasticsearch -R /var/lib/elasticsearch
+sudo chown elasticsearch:elasticsearch -R /etc/default/elasticsearch
+sudo chown elasticsearch:elasticsearch -R /etc/elasticsearch
+
+sudo systemctl enable elasticsearch
+sudo systemctl start elasticsearch
+sudo systemctl status elasticsearch
+
+Git upgrade
+
+sudo gitlab-rails runner -e production 'puts Gitlab::BackgroundMigration.remaining'
+sudo gitlab-rails runner -e production 'puts Gitlab::Database::BackgroundMigrationJob.pending.count'
+
+
+https://git.v18cc.com/admin/background_migrations
+
+sudo gitlab-psql
+
+select job_class_name, table_name, column_name, job_arguments from batched_background_migrations where status <> 3;
+
+
+yum install gitlab-ce-14.10.3-ce.0.el7.x86_64
+
+gitlab-rake db:migrate
+gitlab-ctl reconfigure
+
+yum upgrade
+gitlab-rake db:migrate
+gitlab-ctl reconfigure
+
+gitlab-ctl status
